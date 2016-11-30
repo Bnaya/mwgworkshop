@@ -1,18 +1,50 @@
 // object-fit: contain;
 // width 100vw
 
-const ImageComp = React.createClass({
+class MyImageComp extends React.Component {
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			loaded: false
+		}
+	}
+
+	onLoadHandler() {
+		this.setState({loaded: true});
+	}
+
 	render() {
 		const style = {
 			width: '100vw',
 			objectFit: 'contain',
 			transform: `translateY(${this.props.top}px)`,
-			willChange: 'transform'
+			willChange: 'transform',
+			opacity: this.state.loaded ? 1 : 0
 		};
 
-		return <img src={this.props.image.low_resolution.url} style={style} />
+		return <img src={this.props.src} style={style} onLoad={this.onLoadHandler.bind(this)} />
 	}
-});
+}
+
+class MyPlaceholderComp extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		const style = {
+			width: '100vw',
+			height: '100vw',
+			objectFit: 'contain',
+			transform: `translateY(${this.props.top}px)`,
+			willChange: 'transform',
+			backgroundColor: this.props.color
+		};
+
+		return <div style={style}></div>;
+	}
+}
 
 class galleryComp extends React.Component {
 	constructor(props) {
@@ -24,13 +56,6 @@ class galleryComp extends React.Component {
 
 		this.onScrollHandler = this.onScrollHandler.bind(this);
 	}
-
-	// calcInDomItems(buffer) {
-	// 	return this.props.images.slice(
-	// 		Math.max(Math.floor(window.scrollY / window.innerWidth) - buffer),
-	// 		Math.floor(window.scrollY / window.innerWidth) + Math.ceil(window.innerHeight / window.innerWidth) + 1
-	// 	);
-	// }
 
 	componentWillMount() {
 		window.addEventListener('scroll', this.onScrollHandler);
@@ -74,14 +99,29 @@ class galleryComp extends React.Component {
         		images={this.props.images}
         		containerHeight={window.innerHeight}
         		itemHeight={window.innerWidth}
-        		type={''}
-        		zIndex={1}
+        		type={'full'}
+        		zIndex={3}
+        		scrollY={this.state.scrollY}
+        		buffer={1}
+        	/>
+        	<ImagesView
+        		images={this.props.images}
+        		containerHeight={window.innerHeight}
+        		itemHeight={window.innerWidth}
+        		type={'thumb'}
+        		zIndex={2}
         		scrollY={this.state.scrollY}
         		buffer={5}
         	/>
-            {
-            	// _.map(this.state.inDomItems, (image, index) => (<ImageComp image={image} top={topBase} />))
-            }
+        	<ImagesView
+        		images={this.props.images}
+        		containerHeight={window.innerHeight}
+        		itemHeight={window.innerWidth}
+        		type={'color'}
+        		zIndex={1}
+        		scrollY={this.state.scrollY}
+        		buffer={10}
+        	/>
         </div>
     }
 }
@@ -109,14 +149,6 @@ class ImagesView extends React.Component {
 		const first = Math.floor(props.scrollY / props.itemHeight);
 		const perPage = Math.ceil(props.containerHeight / props.itemHeight) + 1;
 
-		// console.log(first, perPage);
-
-		// console.log(		Math.max(first - props.buffer, 0),
-		// 	Math.min(
-		// 		first + perPage + props.buffer,
-		// 		props.images.length
-		// 	))
-
 		return props.images.slice(
 			Math.max(first - props.buffer, 0),
 			Math.min(
@@ -129,14 +161,24 @@ class ImagesView extends React.Component {
 	render() {
     	const style = {
 			height: `calc(100vw * ${this.props.images.length})`,
-			fontSize: 0
+			fontSize: 0,
+			zIndex: this.props.zIndex,
+			position: 'absolute',
+			top: 0,
+			left: 0
     	};
 
     	const topBase = Math.max(0, (Math.floor(this.props.scrollY / this.props.itemHeight) - this.props.buffer) * this.props.itemHeight)
 
 		return <div style={style}>
 			{this.state.inDom.map((image, index) => {
-				return <ImageComp image={image} top={topBase} />
+				if (this.props.type === 'full') {
+					return <MyImageComp src={image.standard_resolution.url} top={topBase} key={image.standard_resolution.url} />
+				} else if (this.props.type === 'thumb') {
+					return <MyImageComp src={image.thumbnail.url} top={topBase} key={image.thumbnail.url} />
+				} else {
+					return <MyPlaceholderComp top={topBase} color={image.prominentColor} key={image.prominentColor} />
+				}
 			})}
         </div>
 	}
