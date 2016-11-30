@@ -36,7 +36,7 @@ function getInstagramImages(user)
             if (result.more_available) {
                 return getImages(`?max_id=${result.items[result.items.length - 1].id}`).then(nextImages => images.concat(nextImages));
             } else {
-                return Promise.resolve(images);
+                return Promise.resolve(images.slice(0, 1000));
             }
         });
     }
