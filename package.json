@@ -22,6 +22,8 @@
     "color-thief-jimp": "^2.0.2"
   },
   "dependencies": {
+    "get-pixels": "^3.3.0",
+    "color-thief-jimp": "^2.0.2",
     "express": "^4.14.0",
     "express-compile-sass": "^3.0.4",
     "express-jsx": "0.0.4",
