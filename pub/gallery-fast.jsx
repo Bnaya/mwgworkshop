@@ -19,18 +19,18 @@ class galleryComp extends React.Component {
 		super(props);
 
 		this.state = {
-			inDomItems: this.calcInDomItems()
+			scrollY: window.scrollY
 		};
 
 		this.onScrollHandler = this.onScrollHandler.bind(this);
 	}
 
-	calcInDomItems() {
-		return this.props.images.slice(
-			Math.floor(window.scrollY / window.innerWidth),
-			Math.floor(window.scrollY / window.innerWidth) + Math.ceil(window.innerHeight / window.innerWidth) + 1
-		);
-	}
+	// calcInDomItems(buffer) {
+	// 	return this.props.images.slice(
+	// 		Math.max(Math.floor(window.scrollY / window.innerWidth) - buffer),
+	// 		Math.floor(window.scrollY / window.innerWidth) + Math.ceil(window.innerHeight / window.innerWidth) + 1
+	// 	);
+	// }
 
 	componentWillMount() {
 		window.addEventListener('scroll', this.onScrollHandler);
@@ -42,7 +42,7 @@ class galleryComp extends React.Component {
 
 	onScrollHandler(e) {
 		this.setState({
-			inDomItems: this.calcInDomItems()
+			scrollY: window.scrollY
 		});
 	}
 
@@ -70,9 +70,74 @@ class galleryComp extends React.Component {
         		<div>In page: {Math.ceil(window.innerHeight / window.innerWidth) + 1}</div>
         		page: {Math.floor(window.scrollY / window.innerWidth)}
         	</div>
+        	<ImagesView
+        		images={this.props.images}
+        		containerHeight={window.innerHeight}
+        		itemHeight={window.innerWidth}
+        		type={''}
+        		zIndex={1}
+        		scrollY={this.state.scrollY}
+        		buffer={5}
+        	/>
             {
-            	_.map(this.state.inDomItems, (image, index) => (<ImageComp image={image} top={topBase} />))
+            	// _.map(this.state.inDomItems, (image, index) => (<ImageComp image={image} top={topBase} />))
             }
         </div>
     }
+}
+
+class ImagesView extends React.Component {
+	constructor (props) {
+		super(props);
+
+		this.state = {
+			inDom: this.calcInDomItems(props),
+			zIndex: this.props.zIndex,
+			scrollY: this.props.scrollY
+		};
+	}
+
+	componentWillReceiveProps(newProps) {
+ 		this.setState({
+			inDom: this.calcInDomItems(newProps),
+			zIndex: newProps.zIndex,
+			scrollY: newProps.scrollY
+ 		});
+	}
+
+	calcInDomItems(props) {
+		const first = Math.floor(props.scrollY / props.itemHeight);
+		const perPage = Math.ceil(props.containerHeight / props.itemHeight) + 1;
+
+		// console.log(first, perPage);
+
+		// console.log(		Math.max(first - props.buffer, 0),
+		// 	Math.min(
+		// 		first + perPage + props.buffer,
+		// 		props.images.length
+		// 	))
+
+		return props.images.slice(
+			Math.max(first - props.buffer, 0),
+			Math.min(
+				first + perPage + props.buffer,
+				props.images.length
+			)
+		);
+	}
+
+	render() {
+    	const style = {
+			height: `calc(100vw * ${this.props.images.length})`,
+			fontSize: 0
+    	};
+
+    	const topBase = Math.max(0, (Math.floor(this.props.scrollY / this.props.itemHeight) - this.props.buffer) * this.props.itemHeight)
+
+		return <div style={style}>
+			{this.state.inDom.map((image, index) => {
+				return <ImageComp image={image} top={topBase} />
+			})}
+        </div>
+	}
 }
