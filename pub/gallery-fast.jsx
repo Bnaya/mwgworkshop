@@ -5,7 +5,8 @@ const ImageComp = React.createClass({
 	render() {
 		const style = {
 			width: '100vw',
-			objectFit: 'contain'
+			objectFit: 'contain',
+			transform: `translateY(${this.props.top}px)`
 		};
 
 		return <img src={this.props.image.low_resolution.url} style={style} />
@@ -39,12 +40,10 @@ class galleryComp extends React.Component {
 	}
 
 	onScrollHandler(e) {
-		console.log('scroll')
 		this.setState({
 			inDomItems: this.calcInDomItems()
 		});
 	}
-
 
     render() {
     	const style = {
@@ -52,14 +51,26 @@ class galleryComp extends React.Component {
 			fontSize: 0
     	};
 
-    	const pusherStyle = {
-        	height: Math.floor(window.scrollY / window.innerWidth) * window.innerWidth
+    	const topBase = Math.floor(window.scrollY / window.innerWidth) * window.innerWidth;
+
+    	const infoStyle = {
+    		width: '100px',
+    		height: '50px',
+    		position: 'fixed',
+    		top: 0,
+    		left: 0,
+    		fontSize: '1rem',
+    		background: 'rgba(255, 255, 255, 0.6)',
+    		zIndex: 2
     	};
 
         return <div id="gallery" className="fast" style={style}>
-        	<div style={pusherStyle}></div>
+        	<div style={infoStyle}>
+        		<div>In page: {Math.ceil(window.innerHeight / window.innerWidth) + 1}</div>
+        		page: {Math.floor(window.scrollY / window.innerWidth)}
+        	</div>
             {
-            	_.map(this.state.inDomItems, image => (<ImageComp image={image} />))
+            	_.map(this.state.inDomItems, (image, index) => (<ImageComp image={image} top={topBase} />))
             }
         </div>
     }
