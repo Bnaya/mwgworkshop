@@ -6,7 +6,8 @@ const ImageComp = React.createClass({
 		const style = {
 			width: '100vw',
 			objectFit: 'contain',
-			transform: `translateY(${this.props.top}px)`
+			transform: `translateY(${this.props.top}px)`,
+			willChange: 'transform'
 		};
 
 		return <img src={this.props.image.low_resolution.url} style={style} />
