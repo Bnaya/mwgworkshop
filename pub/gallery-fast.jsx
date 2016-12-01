@@ -17,6 +17,7 @@ class MyImageComp extends React.Component {
 	render() {
 		const style = {
 			width: '100vw',
+			height: '100vw',
 			objectFit: 'contain',
 			transform: `translateY(${this.props.top}px)`,
 			willChange: 'transform',
